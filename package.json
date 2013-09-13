@@ -1,0 +1,15 @@
+{
+  "name": "itemTagsDB",
+  "version": "0.0.1",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shycherry/itemTagsDB.git"
+  },
+  "main":"./db.js",  
+  "dependencies": {
+    "nosql": ">= 1.0.2",
+    "uuid": ">=1.4.1",
+    "async": ">=0.2.9"
+  }
+}
