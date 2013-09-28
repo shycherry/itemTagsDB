@@ -71,7 +71,7 @@ module.exports = function (options) {
         var item = Item.getNewItem(dbItems[itemIdx]);
         if(item.xorHasTags(tagsList)){
           itemsSharingTags.push(item);
-        }        
+        }
       }
       callback(undefined, itemsSharingTags);
     });
@@ -152,6 +152,6 @@ module.exports = function (options) {
     
     "deleteAll": deleteAll
 
-  }
+  };
  
-}
+};
