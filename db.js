@@ -16,7 +16,7 @@ module.exports = function (options) {
     
     if('undefined' != typeof options.newServerPort){
       //create server
-      require('./server').start(options.newServerPort);
+      require('./server').start(db, options.newServerPort);
     }
   }
 

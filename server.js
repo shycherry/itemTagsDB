@@ -2,11 +2,80 @@ var https = require('https');
 var WebSocketServer = require('websocket').server;
 var fs = require('fs');
 var path = require('path');
+var uri = require('uri-js');
+var _db = null;
 
-module.exports.start = function(serverPort){
+function resOK(response, data){
+  response.writeHead(200);
+  if (typeof(data) != 'string'){
+    data = JSON.stringify(data);
+  }
+  response.end(data);
+}
+
+function resKO(response, data){
+  response.writeHead(500);
+  if (typeof(data) != 'string'){
+    data = JSON.stringify(data);
+  }
+  response.end(data);
+}
+
+function handleREST(req, res){
+  var uriComponents = uri.parse(req.url);
+
+  switch(req.method){
+    case 'GET':
+    if(/\/items/.exec(uriComponents.path))
+      listAll(req, res);
+    break;
+
+    case 'DELETE':
+    console.log(uriComponents.path)
+    var deleteItemMatches = /\/items\/item\/([^\/]+)/.exec(uriComponents.path);
+    if(deleteItemMatches){
+      deleteItem(req, res, deleteItemMatches[1]);
+    }
+    break;
+
+    default:
+    resKO(res, 'unsupported method');
+  }
+
+}
+
+function deleteItem(req, res, itemUuid){
+  console.log(itemUuid)
+  if(itemUuid){
+    _db.deleteOne(itemUuid, function(err, removedCount){
+      if(err){
+        resKO(res, err);
+      }else{
+        resOK(res, removedCount);
+      }
+    });
+  }
+}
+
+function listAll(req, res){
+  _db.fetchAll(function(err, items){
+    if(err)
+      resKO(res, err);
+    else
+      resOK(res, items);
+  });
+}
+
+module.exports.start = function(db, serverPort){
   console.log('creating server....');
+
+  if('undefined' == typeof db)
+    return;
+
   if('undefined' == typeof serverPort)
     return;
+
+  _db = db;
   
   var credentials = {
     key: fs.readFileSync(path.join(__dirname,'shycherry.fr.key')),
@@ -14,8 +83,7 @@ module.exports.start = function(serverPort){
   };
 
   var httpsServer = https.createServer(credentials, function(req, res){
-    res.writeHead(200);
-    res.end("hello world\n");
+    handleREST(req, res);
   });
 
   httpsServer.listen(serverPort, function(){
@@ -23,7 +91,7 @@ module.exports.start = function(serverPort){
   });
   
   var wsClients = [];
-  
+
   var wsServer = new WebSocketServer({
     httpServer: httpsServer
   });
