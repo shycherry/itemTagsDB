@@ -6,8 +6,6 @@
     "type": "git",
     "url": "https://github.com/shycherry/itemTagsWatcher.git"
   },
-  "main":"nwIndex.html",  
-  "dependencies": {    
-    "itemTagsDB": "git://github.com/shycherry/itemTagsDB.git#master"
-  }
+  "chromium-args": "--ignore-certificate-errors",
+  "main":"nwIndex.html"
 }
