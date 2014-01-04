@@ -21,6 +21,41 @@ function resKO(response, data){
   response.end(data);
 }
 
+function getPOSTData(req, res, iCallback){
+  // Check if this is a form post or a stream post via REST client.
+  if (req.readable) {
+    // REST post.
+    var content = '';
+    var calledCallback = false;
+
+    req.on('data', function (data) {
+      if (content.length > 1e6) {
+        // Flood attack or faulty client, nuke request.
+        if(!calledCallback){
+          iCallback('Request entity too large', null);
+          calledCallback = true;
+        }
+      }
+      content += data;
+    });
+
+    req.on('end', function () {
+      if(!calledCallback){
+        try{
+          content = JSON.parse(content);
+          iCallback(null, content);
+        }catch(e){
+          iCallback('invalid JSON', null);
+        }
+      }
+    });
+  }
+  else {
+    // Form post.
+    iCallback(null, req.body);
+  }
+}
+
 function handleREST(req, res){
   var uriComponents = uri.parse(req.url);
 
@@ -28,13 +63,23 @@ function handleREST(req, res){
     case 'GET':
     if(/\/items/.exec(uriComponents.path))
       listAll(req, res);
+    else
+      resKO(res, 'bad url');
+    break;
+
+    case 'POST':
+    if(/\/items/.exec(uriComponents.path))
+      createItem(req, res);
+    else
+      resKO(res, 'bad url');
     break;
 
     case 'DELETE':
-    console.log(uriComponents.path)
     var deleteItemMatches = /\/items\/item\/([^\/]+)/.exec(uriComponents.path);
     if(deleteItemMatches){
       deleteItem(req, res, deleteItemMatches[1]);
+    }else{
+      resKO(res, 'bad url');
     }
     break;
 
@@ -44,8 +89,29 @@ function handleREST(req, res){
 
 }
 
+function createItem(req, res){
+  console.log('create !');
+  getPOSTData(req, res, function(err, data){
+    if(err){
+      resKO(res, 'invalid JSON');
+    }
+    else{
+      _db.save(data, function(err, item){
+        if(err)
+          resKO(res, 'invalid item');
+        else if(!item)
+          resKO(res, 'invalid item');
+        else if(!item.uuid)
+          resKO(res, 'invalid item');
+        else
+          resOK(res, item.uuid);
+      });
+    }
+    
+  });
+}
+
 function deleteItem(req, res, itemUuid){
-  console.log(itemUuid)
   if(itemUuid){
     _db.deleteOne(itemUuid, function(err, removedCount){
       if(err){

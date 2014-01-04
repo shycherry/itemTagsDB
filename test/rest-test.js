@@ -1,4 +1,4 @@
-﻿var fs = require('fs');
+var fs = require('fs');
 var async = require('async');
 var https = require('https');
 
@@ -60,8 +60,45 @@ function testGetItems(iCallback){
   });
 }
 
+function testCreateItem(iCallback){
+  var postData = JSON.stringify({"name":"my_name"});
+  var req = https.request(
+    {
+      hostname: 'localhost',
+      port: DB_PORT,
+      path: '/items',
+      method: 'POST',
+      headers : {
+        'Content-Type':'application/x-www-form-urlencoded',
+        'Content-Length': postData.length
+      },
+      rejectUnauthorized: false,
+      requestCert: true,
+      agent: false
+    },
+    function(res){
+      var body = [];
+      res.on('data', function(data){
+        body.push(data);
+      });
+      res.on('end', function(){
+        console.log(body.join(''));
+        if(body.join('') === '')
+          iCallback('nullbody', E_FAIL);
+        else
+          iCallback(null, S_OK);
+      });
+    }
+  );
+  req.write(postData);
+  req.end();
+  req.on('error', function(err){
+    iCallback(err, E_FAIL);
+  });
+}
+
 function testDeleteItem(iCallback){
- var req = https.request(
+  var req = https.request(
     {
       hostname: 'localhost',
       port: DB_PORT,
@@ -94,6 +131,7 @@ async.series(
   {
     copyDb : function(callback){return copyFile('./rest-test.nosql', DB_PATH, callback);},
     loadDb : function(callback){return loadDb(callback);},
+    createItem : function(callback){return testCreateItem(callback);},
     getItems: function(callback){return testGetItems(callback);},
     deleteItem: function(callback){return testDeleteItem(callback);}
   },
