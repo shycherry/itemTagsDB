@@ -52,7 +52,7 @@ module.exports = function (options) {
         if(dbItem){
           nosql.update(
             function(dbItem){
-              if(dbItem.uuid == item.uuid){
+              if(dbItem && (dbItem.uuid == item.uuid)){
                 dbItem = item;
               }
               return dbItem;
