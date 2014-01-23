@@ -129,7 +129,7 @@ function testDeleteItem(iCallback){
 
 async.series(
   {
-    copyDb : function(callback){return copyFile('./rest-test.nosql', DB_PATH, callback);},
+    copyDb : function(callback){return copyFile('./rest-test.nosqltest', DB_PATH, callback);},
     loadDb : function(callback){return loadDb(callback);},
     createItem : function(callback){return testCreateItem(callback);},
     getItems: function(callback){return testGetItems(callback);},
