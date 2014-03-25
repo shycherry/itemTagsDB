@@ -1,6 +1,6 @@
 module.exports = function (options) {
-  var URI = require('uri-js');  
-  var db = null;  
+  var URI = require('uri-js');
+  var db = null;
 
   if ('undefined' != typeof options){
     if('undefined' != typeof options.database){
