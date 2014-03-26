@@ -153,7 +153,7 @@ module.exports = function (options) {
           };
 
           for(var itemIdx in items){
-            series.push(getInsertRawItemFn(items[itemIdx]));
+            insertFunctions.push(getInsertRawItemFn(items[itemIdx]));
           }
 
           async.series(insertFunctions, function(err){
