@@ -3,6 +3,7 @@ module.exports = function (options) {
   /**
    * Module options
    */
+  var async = require('async');
   var uuid = require('uuid');
   var nosql = null;
   var Item = require('./item');
@@ -129,6 +130,47 @@ module.exports = function (options) {
       if(callback) callback(undefined, null);
     });
   }
+
+  function cloneDb(iDb, callback) {
+    if(!iDb){
+      if(callback) callback('no input db !');
+    }
+
+    this.deleteAll(function(err){
+      iDb.fetchAll(function(err, items){
+        if(err){
+          if(callback) callback(err);
+        }else{
+
+          var insertFunctions = [];
+
+          var getInsertRawItemFn = function(item){
+            return function(callback){
+              nosql.insert(item, function(){
+                callback(undefined);
+              });
+            }
+          };
+
+          for(var itemIdx in items){
+            series.push(getInsertRawItemFn(items[itemIdx]));
+          }
+
+          async.series(insertFunctions, function(err){
+            if(err){
+              if(callback) callback(err);
+            }else{
+              if(callback) callback(undefined);
+            }
+          });
+          
+        }
+        
+      });
+      
+    });
+    
+  }
   
   /**
   * exposed API
@@ -153,7 +195,9 @@ module.exports = function (options) {
     
     "deleteOne": deleteOne,
     
-    "deleteAll": deleteAll
+    "deleteAll": deleteAll,
+
+    "cloneDb": cloneDb
 
   };
  

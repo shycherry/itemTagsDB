@@ -44,7 +44,9 @@ module.exports = function (options) {
     
     "deleteOne": db.deleteOne,
     
-    "deleteAll": db.deleteAll
+    "deleteAll": db.deleteAll,
+
+    "cloneDb": db.cloneDb
 
   };
  
