@@ -12,7 +12,7 @@ Item.prototype.xorHasTags = function(iTags){
   if(iTags){
     var oneTagFound = false;
     for(var tagIdx in iTags){
-      if( this.hasOwnProperty(iTags[tagIdx]) ){
+      if( this.hasOwnProperty('@'+iTags[tagIdx]) ){
         if(!oneTagFound)
           oneTagFound = true;
         else
@@ -28,7 +28,7 @@ Item.prototype.xorHasTags = function(iTags){
 Item.prototype.hasAllTags = function(iTags){
   if(iTags){
     for(var tagIdx in iTags){
-      if(  !this.hasOwnProperty(iTags[tagIdx]) ){
+      if(  !this.hasOwnProperty('@'+iTags[tagIdx]) ){
         return false;
       }
     }
@@ -41,7 +41,7 @@ Item.prototype.hasAllTags = function(iTags){
 Item.prototype.orHasTags = function(iTags){
   if(iTags){
     for(var tagIdx in iTags){
-      if( this.hasOwnProperty(iTags[tagIdx]) ){
+      if( this.hasOwnProperty('@'+iTags[tagIdx]) ){
         return true;
       }
     }
@@ -54,12 +54,27 @@ Item.prototype.orHasTags = function(iTags){
 Item.prototype.addTags = function(iTags){
   if(iTags){
     for(var tagIdx in iTags){
-      if( !this.hasOwnProperty(iTags[tagIdx]) ){
-        this[iTags[tagIdx]] = "";
+      var currentTag = '@'+iTags[tagIdx];
+      if( !this.hasOwnProperty(currentTag) ){
+        this[currentTag] = "";
       }
     }
   }
 };
+
+Item.prototype.getTags = function(){
+  var result = [];
+  for(var tag in this){
+    if(tag[0] === '@')
+      result.push(tag);
+  }
+
+  return result;
+};
+
+Item.prototype.getTagValue = function(iTag){
+  return this['@'+iTag];
+}
 
 function getNewItem(iData){
   return new Item(iData);

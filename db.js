@@ -1,4 +1,5 @@
 module.exports = function (options) {
+  var item = require('./item');
   var URI = require('uri-js');
   var db = null;
 
@@ -30,11 +31,15 @@ module.exports = function (options) {
 
     "dumpDb" : db.dumpDb,
 
+    "getNewItem" : item.getNewItem,
+
     "save": db.save,
 
     "fetchItemsSharingTags": db.fetchItemsSharingTags,
 
     "fetchAllTags": db.fetchAllTags,
+
+    "fetchAllByFilter": db.fetchAllByFilter,
 
     "fetchOneByFilter": db.fetchOneByFilter,
 

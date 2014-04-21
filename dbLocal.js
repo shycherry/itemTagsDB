@@ -68,12 +68,12 @@ module.exports = function (options) {
   }
 
   function fetchItemsSharingTags(tagsList, callback){
-    nosql.all(null, function(dbItems){
+    fetchAll(function(err, items){
       var itemsSharingTags = [];
-      for(var itemIdx in dbItems){
-        var item = Item.getNewItem(dbItems[itemIdx]);
-        if(item.xorHasTags(tagsList)){
-          itemsSharingTags.push(item);
+      for(var itemIdx in items){
+        var currentItem = items[itemIdx];
+        if(currentItem.hasAllTags(tagsList)){
+          itemsSharingTags.push(currentItem);
         }
       }
       callback(undefined, itemsSharingTags);
@@ -97,14 +97,38 @@ module.exports = function (options) {
     });
   }
 
+  function fetchAllByFilter(filter, callback){
+    if(!filter){
+      if(callback) {callback('no filter');}
+    }
+
+    fetchAll(function(err, items){
+      if(err){
+        if(callback) {callback(err);}
+      }
+      var matchingItems = [];
+      for(var itemIdx in items){
+        var currentItem = items[itemIdx];
+        if(filter(currentItem)){
+          matchingItems.push(currentItem);
+        }
+      }
+      callback(undefined, matchingItems);
+    });
+  }
+
   function fetchOneByFilter(filter, callback){
-    nosql.one(filter, function(dbItem){
-      if(!dbItem){
-        callback('no fetch !');
+    fetchAllByFilter(filter, function(err, items){
+      if(err){
+        if(callback){callback(err);}        
       }
-      else{
-        callback(undefined, Item.getNewItem(dbItem));
+
+      if(items && items.length >= 1){
+        if(callback){callback(undefined, items[0]);}
+      }else{
+        if(callback){callback('no fetch !');}
       }
+
     });
   }
 
@@ -187,6 +211,8 @@ module.exports = function (options) {
 
     "fetchAllTags": fetchAllTags,
 
+    "fetchAllByFilter": fetchAllByFilter,
+    
     "fetchOneByFilter": fetchOneByFilter,
 
     "fetchOne":  fetchOne,
