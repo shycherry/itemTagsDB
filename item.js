@@ -9,10 +9,26 @@ Item.prototype.dump = function(){
 };
 
 Item.prototype.xorHasTags = function(iTags){
-  var ownTags = this.tags;
-  if(ownTags && iTags){
+  if(iTags){
+    var oneTagFound = false;
     for(var tagIdx in iTags){
-      if(ownTags.lastIndexOf(iTags[tagIdx]) == -1){
+      if( this.hasOwnProperty(iTags[tagIdx]) ){
+        if(!oneTagFound)
+          oneTagFound = true;
+        else
+          return false;
+      }
+    }
+  }else{
+    return false;
+  }
+  return oneTagFound;
+};
+
+Item.prototype.hasAllTags = function(iTags){
+  if(iTags){
+    for(var tagIdx in iTags){
+      if(  !this.hasOwnProperty(iTags[tagIdx]) ){
         return false;
       }
     }
@@ -23,10 +39,9 @@ Item.prototype.xorHasTags = function(iTags){
 };
 
 Item.prototype.orHasTags = function(iTags){
-  var ownTags = this.tags;
-  if(ownTags && iTags){
+  if(iTags){
     for(var tagIdx in iTags){
-      if(ownTags.lastIndexOf(iTags[tagIdx]) != -1){
+      if( this.hasOwnProperty(iTags[tagIdx]) ){
         return true;
       }
     }
@@ -37,11 +52,10 @@ Item.prototype.orHasTags = function(iTags){
 };
 
 Item.prototype.addTags = function(iTags){
-  var ownTags = this.tags;
-  if(ownTags && iTags){
+  if(iTags){
     for(var tagIdx in iTags){
-      if(ownTags.lastIndexOf(iTags[tagIdx]) == -1){
-        ownTags.push(iTags[tagIdx]);
+      if( !this.hasOwnProperty(iTags[tagIdx]) ){
+        this[iTags[tagIdx]] = "";
       }
     }
   }
