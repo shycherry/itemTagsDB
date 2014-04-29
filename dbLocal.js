@@ -102,6 +102,34 @@ module.exports = function (options) {
       if(callback) {callback('no filter');}
     }
 
+    var objFilter = {};
+    try{
+      objFilter = JSON.parse(filter);
+    }catch(e){
+      if(callback) {callback('bad filter');} 
+      return;
+    }
+
+    var areMatching = function(itemFilter, itemToTest){
+      var isMatching = true;
+      for(var prop in itemFilter){
+        
+        if( !itemToTest.hasOwnProperty(prop)){
+          isMatching = false;
+          break;
+        }
+
+        if( typeof(itemFilter[prop]) == 'object' ){
+          isMatching = areMatching(itemFilter[prop], itemToTest[prop]);
+          if(!isMatching) break;
+        }else if( (itemToTest[prop] != itemFilter[prop]) ){
+          isMatching = false;
+          break;
+        }
+      }
+      return isMatching;    
+    }
+
     fetchAll(function(err, items){
       if(err){
         if(callback) {callback(err);}
@@ -109,7 +137,7 @@ module.exports = function (options) {
       var matchingItems = [];
       for(var itemIdx in items){
         var currentItem = items[itemIdx];
-        if(filter(currentItem)){
+        if( areMatching(objFilter, currentItem) ){
           matchingItems.push(currentItem);
         }
       }
