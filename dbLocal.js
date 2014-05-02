@@ -252,7 +252,6 @@ module.exports = function (options) {
     var diffReport = {};
     var newItems = diffReport['onlyDB1'] = [];
     var removedItems = diffReport['onlyDB2'] = [];
-    var changedItems = diffReport['changed'] = [];
 
     var objFilter = iFilter;
     if(typeof(objFilter) !=='object'){
@@ -272,8 +271,8 @@ module.exports = function (options) {
     var self = this;
     async.series(
       {
-        "matchesDB1" : function(callback){ return self.fetchAllByFilter(iFilter, callback); },
-        "matchesDB2" : function(callback){ return iDb.fetchAllByFilter(iFilter, callback); }
+        "matchesDB1" : function(callback){ return self.fetchAllByFilter(objFilter, callback); },
+        "matchesDB2" : function(callback){ return iDb.fetchAllByFilter(objFilter, callback); }
       },
       compareMatchs
     );
@@ -285,7 +284,7 @@ module.exports = function (options) {
       console.log('matchesDB2 :'+JSON.stringify(matchesDB2, 2, 2));
 
       for(var idxDB1 in matchesDB1){
-        var itemDB1Filter = createStrictFilter(iFilter, matchesDB1[idxDB1]);
+        var itemDB1Filter = createStrictFilter(objFilter, matchesDB1[idxDB1]);
         var onlyDB1 = true;
         for(var idxDB2 in matchesDB2){
           if( isFilterMatching(itemDB1Filter, matchesDB2[idxDB2]) ){
@@ -299,7 +298,7 @@ module.exports = function (options) {
       }
 
       for(var idxDB2 in matchesDB2){
-        var itemDB2Filter = createStrictFilter(iFilter, matchesDB2[idxDB2]);
+        var itemDB2Filter = createStrictFilter(objFilter, matchesDB2[idxDB2]);
         var onlyDB2 = true;
         for(var idxDB1 in matchesDB1){
           if( isFilterMatching(itemDB2Filter, matchesDB1[idxDB1]) ){
