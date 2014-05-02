@@ -51,7 +51,9 @@ module.exports = function (options) {
     
     "deleteAll": db.deleteAll,
 
-    "cloneDb": db.cloneDb
+    "cloneDb": db.cloneDb,
+
+    "diffDb": db.diffDb
 
   };
  

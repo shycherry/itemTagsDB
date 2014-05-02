@@ -97,37 +97,61 @@ module.exports = function (options) {
     });
   }
 
-  function fetchAllByFilter(filter, callback){
-    if(!filter){
-      if(callback) {callback('no filter');}
+  function createStrictFilter(itemFilter, item){
+    var resultFilter = {};
+    for(var filterProp in itemFilter){
+      var filterPropValue = itemFilter[filterProp];
+      if( typeof(filterPropValue) === 'object' ){
+        resultFilter[filterProp] = createStrictFilter(filterPropValue, item[filterProp]);
+      }else{
+        resultFilter[filterProp] = item[filterProp];
+      }
     }
+    return resultFilter;
+  }
 
-    var objFilter = {};
-    try{
-      objFilter = JSON.parse(filter);
-    }catch(e){
-      if(callback) {callback('bad filter');} 
-      return;
-    }
-
-    var areMatching = function(itemFilter, itemToTest){
-      var isMatching = true;
-      for(var prop in itemFilter){
-        
-        if( !itemToTest.hasOwnProperty(prop)){
-          isMatching = false;
-          break;
-        }
-
-        if( typeof(itemFilter[prop]) == 'object' ){
-          isMatching = areMatching(itemFilter[prop], itemToTest[prop]);
-          if(!isMatching) break;
-        }else if( (itemToTest[prop] != itemFilter[prop]) ){
+  function isFilterMatching(itemFilter, itemToTest){
+    var isMatching = true;
+    for(var filterProp in itemFilter){
+      var filterPropValue = itemFilter[filterProp];
+      
+      if( typeof(filterPropValue) === 'object' ){
+        isMatching = isFilterMatching(filterPropValue, itemToTest[filterProp]);
+        if(!isMatching) break;
+      }      
+      else if( (filterPropValue === '/') ){        
+        if( !itemToTest.hasOwnProperty(filterProp)){
           isMatching = false;
           break;
         }
       }
-      return isMatching;    
+      else if( (filterPropValue === "\\" ) ){
+        if( itemToTest.hasOwnProperty(filterProp)){
+          isMatching = false;
+          break;
+        }
+      }
+      else if( (filterPropValue != itemToTest[filterProp]) ){
+        isMatching = false;
+        break;
+      }
+    }
+    return isMatching;    
+  }
+
+  function fetchAllByFilter(iFilter, callback){
+    if(!iFilter){
+      if(callback) {callback('no filter');}
+    }
+
+    var objFilter = iFilter;
+    if(typeof(objFilter) !== 'object' ){
+      try{
+        objFilter = JSON.parse(iFilter);
+      }catch(e){
+        if(callback) {callback('bad filter');} 
+        return;
+      }
     }
 
     fetchAll(function(err, items){
@@ -137,7 +161,7 @@ module.exports = function (options) {
       var matchingItems = [];
       for(var itemIdx in items){
         var currentItem = items[itemIdx];
-        if( areMatching(objFilter, currentItem) ){
+        if( isFilterMatching(objFilter, currentItem) ){
           matchingItems.push(currentItem);
         }
       }
@@ -145,8 +169,8 @@ module.exports = function (options) {
     });
   }
 
-  function fetchOneByFilter(filter, callback){
-    fetchAllByFilter(filter, function(err, items){
+  function fetchOneByFilter(iFilter, callback){
+    fetchAllByFilter(iFilter, function(err, items){
       if(err){
         if(callback){callback(err);}        
       }
@@ -223,6 +247,74 @@ module.exports = function (options) {
     });
     
   }
+
+  function diffDb (iDb, iFilter, callback) {
+    var diffReport = {};
+    var newItems = diffReport['onlyDB1'] = [];
+    var removedItems = diffReport['onlyDB2'] = [];
+    var changedItems = diffReport['changed'] = [];
+
+    var objFilter = iFilter;
+    if(typeof(objFilter) !=='object'){
+      try{
+        objFilter = JSON.parse(iFilter);
+      }catch(e){
+        if(callback) {callback('bad filter');} 
+        return;
+      }  
+    }
+
+    if(!iDb){
+      if(callback) {callback('no comparison db');}
+      return;
+    }
+
+    var self = this;
+    async.series(
+      {
+        "matchesDB1" : function(callback){ return self.fetchAllByFilter(iFilter, callback); },
+        "matchesDB2" : function(callback){ return iDb.fetchAllByFilter(iFilter, callback); }
+      },
+      compareMatchs
+    );
+
+    function compareMatchs(err, results){
+      var matchesDB1 = results["matchesDB1"];
+      var matchesDB2 = results["matchesDB2"];
+      console.log('matchesDB1 :'+JSON.stringify(matchesDB1, 2, 2));
+      console.log('matchesDB2 :'+JSON.stringify(matchesDB2, 2, 2));
+
+      for(var idxDB1 in matchesDB1){
+        var itemDB1Filter = createStrictFilter(iFilter, matchesDB1[idxDB1]);
+        var onlyDB1 = true;
+        for(var idxDB2 in matchesDB2){
+          if( isFilterMatching(itemDB1Filter, matchesDB2[idxDB2]) ){
+            onlyDB1 = false;
+            break;
+          }          
+        }
+        if(onlyDB1){
+          newItems.push(matchesDB1[idxDB1]);
+        }
+      }
+
+      for(var idxDB2 in matchesDB2){
+        var itemDB2Filter = createStrictFilter(iFilter, matchesDB2[idxDB2]);
+        var onlyDB2 = true;
+        for(var idxDB1 in matchesDB1){
+          if( isFilterMatching(itemDB2Filter, matchesDB1[idxDB1]) ){
+            onlyDB2 = false;
+            break;
+          }          
+        }
+        if(onlyDB2){
+          removedItems.push(matchesDB2[idxDB2]);
+        }
+      }
+
+      if(callback) {callback(err, diffReport);}
+    }
+  }
   
   /**
   * exposed API
@@ -251,7 +343,9 @@ module.exports = function (options) {
     
     "deleteAll": deleteAll,
 
-    "cloneDb": cloneDb
+    "cloneDb": cloneDb,
+
+    "diffDb": diffDb
 
   };
  

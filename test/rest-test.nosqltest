@@ -1,2 +1,2 @@
-{"name":"Lindsey Stirling","tags":["person","artist", "test"],"uuid":"a65f02c0-0e94-11e3-8a09-a191f426584e"}
+{"@person":{"name":"Lindsey Stirling real name"}, "@artist":{"name":"Lindsey Stirling"},"@test":"","uuid":"a65f02c0-0e94-11e3-8a09-a191f426584e"}
 {"name":"Transcendance","tags":["music","mp3", "test"],"uuid":"f4392cb0-10f0-11e3-9840-9d8ddeba3ac4"}
