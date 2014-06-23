@@ -66,7 +66,7 @@ Item.prototype.getTags = function(){
   var result = [];
   for(var tag in this){
     if(tag[0] === '@')
-      result.push(tag);
+      result.push(tag.slice(1));
   }
 
   return result;

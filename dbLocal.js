@@ -81,10 +81,10 @@ module.exports = function (options) {
   }
 
   function fetchAllTags(callback){
-    nosql.all(null, function(dbItems){
+    fetchAll(function(err, items){
       var tagsList=[];
-      for(var itemIdx in dbItems){
-        var itemTags = dbItems[itemIdx].tags;
+      for(var itemIdx in items){
+        var itemTags = items[itemIdx].getTags();
         if(itemTags){
           for(var tagIdx in itemTags){
             if(tagsList.lastIndexOf(itemTags[tagIdx]) == -1){
