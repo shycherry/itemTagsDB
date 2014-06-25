@@ -114,6 +114,11 @@ module.exports = function (options) {
     var isMatching = true;
     for(var filterProp in itemFilter){
       var filterPropValue = itemFilter[filterProp];
+
+      if(!itemToTest){
+        isMatching = false;
+        break;
+      }
       
       if( typeof(filterPropValue) === 'object' ){
         isMatching = isFilterMatching(filterPropValue, itemToTest[filterProp]);
