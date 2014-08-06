@@ -34,12 +34,58 @@ function testDiff1(iCallback){
   };
   
   db1.diffDb(db2, JSON.stringify(filter), function(err, iDiffReport){
-    console.log('diff report:');
+    console.log('diff report 1:');
     console.log(JSON.stringify(iDiffReport,2,2));
     if(err){
       iCallback(err, E_FAIL);
     }else{
-      iCallback(null, S_OK);
+      if(iDiffReport["onlyDB1"].length != 1 || iDiffReport["onlyDB2"].length != 1){
+        iCallback('bad expected count !', E_FAIL);
+      }else{
+        iCallback(null, S_OK);  
+      }
+    }
+  });
+}
+
+function testDiff2(iCallback){
+  console.log('testDiff2');
+  var filter = {
+    "@ftpDB1":"/" //todo change syntax ?
+  };
+  
+  db1.diffDb(db2, JSON.stringify(filter), function(err, iDiffReport){
+    console.log('diff report 2:');
+    console.log(JSON.stringify(iDiffReport,2,2));
+    if(err){
+      iCallback(err, E_FAIL);
+    }else{
+      if(iDiffReport["onlyDB1"].length != 2 || iDiffReport["onlyDB2"].length != 0){
+        iCallback('bad expected count !', E_FAIL);
+      }else{
+        iCallback(null, S_OK);  
+      }
+    }
+  });
+}
+
+function testDiff3(iCallback){
+  console.log('testDiff3');
+  var filter = {
+    "@ftp":"/" //todo change syntax ?
+  };
+  
+  db1.diffDb(db2, JSON.stringify(filter), function(err, iDiffReport){
+    console.log('diff report 3:');
+    console.log(JSON.stringify(iDiffReport,2,2));
+    if(err){
+      iCallback(err, E_FAIL);
+    }else{
+      if(iDiffReport["onlyDB1"].length != 0 || iDiffReport["onlyDB2"].length != 0){
+        iCallback('bad expected count !', E_FAIL);
+      }else{
+        iCallback(null, S_OK);  
+      }
     }
   });
 }
@@ -50,7 +96,9 @@ async.series(
     copyDb : function(callback){return copyFile(DIFF_DB_PATH_1, TMP_DIFF_DB_PATH_1, callback);},
     copyDb2 : function(callback){return copyFile(DIFF_DB_PATH_2, TMP_DIFF_DB_PATH_2, callback);},
     loadDbs : function(callback){return loadDbs(callback);},
-    diff1: function(callback){return testDiff1(callback);}
+    diff1: function(callback){return testDiff1(callback);},
+    diff2: function(callback){return testDiff2(callback);},
+    diff3: function(callback){return testDiff3(callback);}
   },
 
   function finishCallback(err, results){

@@ -1,6 +1,6 @@
 {"@file":{"uri":"ftp://user:mdp@host/Musique/Aral"},"@ftp":"","@musique":"","uuid":"3b551870-c9ab-11e3-a0dd-6fc46e87b64c"}
 {"@file":{"uri":"ftp://user:mdp@host/Musique/Arne%20Vinzon"},"@ftp":"","@musique":"","uuid":"3b55b4b0-c9ab-11e3-a0dd-6fc46e87b64c"}
 {"@file":{"uri":"ftp://user:mdp@host/Musique/Incoming"},"@ftp":"","@musique":"","uuid":"3b656c20-c9ab-11e3-a0dd-6fc46e87b64c"}
-{"@file":{"uri":"ftp://user:mdp@host/Musique/Jack%20et%20la%20mÃ©canique%20du%20coeur%20Soundtrack"},"@ftp":"","@musique":"","uuid":"3b665680-c9ab-11e3-a0dd-6fc46e87b64c"}
-{"@file":{"uri":"ftp://user:mdp@host/Upload"},"@perso":"","@ftp":"","uuid":"39cdb520-c9ab-11e3-a0dd-6fc46e87b64c"}
+{"@file":{"uri":"ftp://user:mdp@host/Musique/Jack%20et%20la%20mÃ©canique%20du%20coeur%20Soundtrack"},"@ftpDB1":"","@musique":"","uuid":"3b665680-c9ab-11e3-a0dd-6fc46e87b64c"}
+{"@file":{"uri":"ftp://user:mdp@host/Upload"},"@perso":"","@ftpDB1":"","uuid":"39cdb520-c9ab-11e3-a0dd-6fc46e87b64c"}
 {"@file":{"uri":"ftp://user:mdp@host/UploadBis_OnlyDB1"},"@perso":"","@ftp":"","uuid":"39cdb520-c9ab-11e3-a0dd-6fc46e87b6fe"}
