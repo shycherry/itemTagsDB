@@ -285,8 +285,8 @@ module.exports = function (options) {
     function compareMatchs(err, results){
       var matchesDB1 = results["matchesDB1"];
       var matchesDB2 = results["matchesDB2"];
-      console.log('matchesDB1 :'+JSON.stringify(matchesDB1, 2, 2));
-      console.log('matchesDB2 :'+JSON.stringify(matchesDB2, 2, 2));
+      // console.log('matchesDB1 :'+JSON.stringify(matchesDB1, 2, 2));
+      // console.log('matchesDB2 :'+JSON.stringify(matchesDB2, 2, 2));
 
       for(var idxDB1 in matchesDB1){
         var itemDB1Filter = createStrictFilter(objFilter, matchesDB1[idxDB1]);
