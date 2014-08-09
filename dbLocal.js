@@ -19,10 +19,62 @@ module.exports = function (options) {
     }
   }
   
-  function _uuidFilter_(uuid){
+  function _uuidNoSqlFilter_(uuid){
     return function(dbItem){
       return uuid == dbItem.uuid;
     };
+  }
+
+  function _isTagFilter_(itemFilter){
+    var isTagFilter = true;
+
+    for(var filterProp in itemFilter){
+      var filterPropValue = itemFilter[filterProp];
+      if(filterProp[0] !== '@'){
+        isTagFilter = false;
+        break;
+      }
+      if( typeof(filterPropValue) === 'object' ){
+        isTagFilter = false;
+        break;
+      }
+    }
+
+    return isTagFilter;
+  }
+
+  function _isFilterMatching_(itemFilter, itemToTest){
+    var isMatching = true;
+    for(var filterProp in itemFilter){
+      var filterPropValue = itemFilter[filterProp];
+
+      if(!itemToTest){
+        isMatching = false;
+        break;
+      }
+      
+      if( typeof(filterPropValue) === 'object' ){
+        isMatching = _isFilterMatching_(filterPropValue, itemToTest[filterProp]);
+        if(!isMatching) break;
+      }      
+      else if( (filterPropValue === '/') ){        
+        if( !itemToTest.hasOwnProperty(filterProp)){
+          isMatching = false;
+          break;
+        }
+      }
+      else if( (filterPropValue === "\\" ) ){
+        if( itemToTest.hasOwnProperty(filterProp)){
+          isMatching = false;
+          break;
+        }
+      }
+      else if( (filterPropValue != itemToTest[filterProp]) ){
+        isMatching = false;
+        break;
+      }
+    }
+    return isMatching;    
   }
   
   /**
@@ -132,40 +184,6 @@ module.exports = function (options) {
     return resultFilter;
   }
 
-  function isFilterMatching(itemFilter, itemToTest){
-    var isMatching = true;
-    for(var filterProp in itemFilter){
-      var filterPropValue = itemFilter[filterProp];
-
-      if(!itemToTest){
-        isMatching = false;
-        break;
-      }
-      
-      if( typeof(filterPropValue) === 'object' ){
-        isMatching = isFilterMatching(filterPropValue, itemToTest[filterProp]);
-        if(!isMatching) break;
-      }      
-      else if( (filterPropValue === '/') ){        
-        if( !itemToTest.hasOwnProperty(filterProp)){
-          isMatching = false;
-          break;
-        }
-      }
-      else if( (filterPropValue === "\\" ) ){
-        if( itemToTest.hasOwnProperty(filterProp)){
-          isMatching = false;
-          break;
-        }
-      }
-      else if( (filterPropValue != itemToTest[filterProp]) ){
-        isMatching = false;
-        break;
-      }
-    }
-    return isMatching;    
-  }
-
   function fetchAllByFilter(iFilter, callback){
     if(!iFilter){
       if(callback) {callback('no filter');}
@@ -188,7 +206,7 @@ module.exports = function (options) {
       var matchingItems = [];
       for(var itemIdx in items){
         var currentItem = items[itemIdx];
-        if( isFilterMatching(objFilter, currentItem) ){
+        if( _isFilterMatching_(objFilter, currentItem) ){
           matchingItems.push(currentItem);
         }
       }
@@ -212,7 +230,7 @@ module.exports = function (options) {
   }
 
   function fetchOne (uuid, callback) {
-    nosql.one(_uuidFilter_(uuid), function(dbItem){
+    nosql.one(_uuidNoSqlFilter_(uuid), function(dbItem){
       if(!dbItem){
         callback('not found !');
       }
@@ -231,7 +249,7 @@ module.exports = function (options) {
       if(typeof(item) === 'object'){
         uuidToDelete = item['uuid'];
       }
-      nosql.remove(_uuidFilter_(uuidToDelete), function(removedCount){
+      nosql.remove(_uuidNoSqlFilter_(uuidToDelete), function(removedCount){
         callback(undefined, removedCount);
       });  
     }
@@ -244,7 +262,7 @@ module.exports = function (options) {
   }
   
   function deleteOne (uuid, callback) {
-    nosql.remove(_uuidFilter_(uuid), function(removedCount){
+    nosql.remove(_uuidNoSqlFilter_(uuid), function(removedCount){
       callback(undefined, removedCount);
     });
   }
@@ -317,6 +335,8 @@ module.exports = function (options) {
     }
 
     var self = this;
+    var isTagFilter = _isTagFilter_(iFilter);
+
     async.series(
       {
         "matchesDB1" : function(callback){ return self.fetchAllByFilter(objFilter, callback); },
@@ -331,11 +351,17 @@ module.exports = function (options) {
       // console.log('matchesDB1 :'+JSON.stringify(matchesDB1, 2, 2));
       // console.log('matchesDB2 :'+JSON.stringify(matchesDB2, 2, 2));
 
+      var itemDBFilter;
       for(var idxDB1 in matchesDB1){
-        var itemDB1Filter = createStrictFilter(objFilter, matchesDB1[idxDB1]);
+        if(isTagFilter){
+          itemDBFilter = {'uuid':matchesDB1[idxDB1].uuid};
+        }else{
+          itemDBFilter = createStrictFilter(objFilter, matchesDB1[idxDB1]);
+        }
+
         var onlyDB1 = true;
         for(var idxDB2 in matchesDB2){
-          if( isFilterMatching(itemDB1Filter, matchesDB2[idxDB2]) ){
+          if( _isFilterMatching_(itemDBFilter, matchesDB2[idxDB2]) ){
             onlyDB1 = false;
             break;
           }          
@@ -346,10 +372,15 @@ module.exports = function (options) {
       }
 
       for(var idxDB2 in matchesDB2){
-        var itemDB2Filter = createStrictFilter(objFilter, matchesDB2[idxDB2]);
+        if(isTagFilter){
+          itemDBFilter = {'uuid':matchesDB2[idxDB2].uuid};
+        }else{
+          itemDBFilter = createStrictFilter(objFilter, matchesDB2[idxDB2]);
+        }
+        
         var onlyDB2 = true;
         for(var idxDB1 in matchesDB1){
-          if( isFilterMatching(itemDB2Filter, matchesDB1[idxDB1]) ){
+          if( _isFilterMatching_(itemDBFilter, matchesDB1[idxDB1]) ){
             onlyDB2 = false;
             break;
           }          
