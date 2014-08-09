@@ -33,6 +33,8 @@ module.exports = function (options) {
 
     "getNewItem" : item.getNewItem,
 
+    "saveMany": db.saveMany,
+
     "save": db.save,
 
     "fetchItemsSharingTags": db.fetchItemsSharingTags,
@@ -48,6 +50,8 @@ module.exports = function (options) {
     "fetchAll":  db.fetchAll,
     
     "deleteOne": db.deleteOne,
+
+    "deleteMany": db.deleteMany,
     
     "deleteAll": db.deleteAll,
 

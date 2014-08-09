@@ -70,15 +70,15 @@ function testFetchAll(iCallback){
 
 function testSaveItem1(iCallback){
   testSave(item1, function(err, result){
-    if(err){iCallback(null, S_OK)}
-    else{iCallback(E_FAIL, E_FAIL)}
+    if(err){iCallback(E_FAIL, E_FAIL)}
+    else{iCallback(null, S_OK)}
   })
 }
 
 function testFetchOneItem1(iCallback){
   testFetchOne(item1.uuid, function(err, result){
-    if(err){iCallback(null, S_OK)}
-    else{iCallback(E_FAIL, E_FAIL)}
+    if(err){iCallback(E_FAIL, E_FAIL)}
+    else{iCallback(null, S_OK)}
   })
 }
 
@@ -140,7 +140,7 @@ function testUpdateItem3(iCallback){
 function testRemoveItem1(iCallback){
   db.deleteOne(item1.uuid, function(err, result){
     if(err){iCallback(err, E_FAIL)}
-    else if(result != 0){iCallback(E_FAIL, E_FAIL)}
+    else if(result != 1){iCallback(E_FAIL, E_FAIL)}
     else(iCallback(null, S_OK))
   })
 }

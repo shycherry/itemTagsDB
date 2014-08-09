@@ -40,29 +40,51 @@ module.exports = function (options) {
     });
   }
 
+  function saveMany(input, callback){
+    if(!callback)
+      callback = function(){};
+    
+    if(Array.isArray(input)){
+      return async.each(input, save, callback);
+    }else{
+      return callback('expected array');
+    }
+  }
+
   function save (item, callback) {
-    var isCreation = ('undefined' == typeof item.uuid);
-    if( isCreation ){
+    if(!callback)
+      callback = function(){};
+
+    function _create(item, callback){
       item.uuid = uuid.v1();
       nosql.insert(item, function(){
         callback(undefined, item, true);
       });
+    }
+
+    var hasNoUuid = ('undefined' == typeof item.uuid);
+    if( hasNoUuid ){
+      _create(item, callback);
     }else{
-      this.fetchOne(item.uuid, function(err, dbItem){
-        if(err){ return callback(err); }
-        if(dbItem){
-          nosql.update(
-            function(dbItem){
-              if(dbItem && (dbItem.uuid == item.uuid)){
-                dbItem = item;
+      fetchOne(item.uuid, function(err, dbItem){
+        if(err){ 
+          _create(item, callback);
+        }else{
+          if(dbItem){
+            nosql.update(
+              function(dbItem){
+                if(dbItem && (dbItem.uuid == item.uuid)){
+                  dbItem = item;
+                }
+                return dbItem;
+              },
+              function(){
+                callback(undefined, item, false);
               }
-              return dbItem;
-            },
-            function(){
-              callback(undefined, item, false);
-            }
-          );
+            );
+          }
         }
+        
       });
     }
   }
@@ -199,7 +221,28 @@ module.exports = function (options) {
       }
     });
   }
+  
+  function deleteMany (input, callback) {
+    if(!callback)
+      callback = function(){};
 
+    function _deleteItem(item, callback){
+      var uuidToDelete = item;
+      if(typeof(item) === 'object'){
+        uuidToDelete = item['uuid'];
+      }
+      nosql.remove(_uuidFilter_(uuidToDelete), function(removedCount){
+        callback(undefined, removedCount);
+      });  
+    }
+
+    if(Array.isArray(input)){
+      return async.each(input, _deleteItem, callback);
+    }else{
+      return callback('expected array');
+    }
+  }
+  
   function deleteOne (uuid, callback) {
     nosql.remove(_uuidFilter_(uuid), function(removedCount){
       callback(undefined, removedCount);
@@ -329,6 +372,8 @@ module.exports = function (options) {
 
     "dumpDb" : dumpDb,
 
+    "saveMany": saveMany,
+
     "save": save,
 
     "fetchItemsSharingTags": fetchItemsSharingTags,
@@ -344,6 +389,8 @@ module.exports = function (options) {
     "fetchAll":  fetchAll,
     
     "deleteOne": deleteOne,
+
+    "deleteMany": deleteMany,
     
     "deleteAll": deleteAll,
 
