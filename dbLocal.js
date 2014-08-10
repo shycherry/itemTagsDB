@@ -269,7 +269,7 @@ module.exports = function (options) {
   
   function deleteAll (callback) {
     nosql.clear(function(){
-      if(callback) callback(undefined, null);
+      if(callback) callback(undefined);
     });
   }
 
