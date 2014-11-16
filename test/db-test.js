@@ -40,6 +40,7 @@ function testSave(iItem, iCallback){
     iItem,
     (function(iItem){
       return function(err, dbItem, created){
+        assert(dbItem.name != iItem.name)
         if(err || !dbItem){
           iCallback(err, null)
         }else if(dbItem.name != iItem.name){

@@ -5,13 +5,19 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/shycherry/itemTagsDB.git"
-  },  
-  "main":"./db.js",  
-  "dependencies": {    
+  },
+  "main": "./db.js",
+  "dependencies": {
     "nosql": ">= 1.0.2",
-    "websocket":">= 1.0.8",
+    "websocket": ">= 1.0.8",
     "uuid": ">=1.4.1",
     "async": ">=0.2.9",
     "uri-js": ">=1.4.2"
+  },
+  "devDependencies": {
+    "mocha": "^2.0.1"
+  },
+  "scripts": {
+    "test" : "mocha test"
   }
 }
